@@ -5,6 +5,7 @@ import Navbar from '@/components/Layout/Navbar'
 import Footer from '@/components/Layout/Footer'
 import './globals.css'
 import { usePathname } from 'next/navigation'
+import { SessionProvider } from 'next-auth/react'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -15,11 +16,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <CartProvider>
-          {!isStudioRoute && <Navbar />}
-          <main>{children}</main>
-          {!isStudioRoute && <Footer />}
-        </CartProvider>
+        {/* ✅ Wrap the whole app with SessionProvider + CartProvider */}
+        <SessionProvider>
+          <CartProvider>
+            {!isStudioRoute && <Navbar />}
+            <main>{children}</main>
+            {!isStudioRoute && <Footer />}
+          </CartProvider>
+        </SessionProvider>
       </body>
     </html>
   )

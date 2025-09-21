@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ShoppingCart, Heart, Eye, ArrowRight } from 'lucide-react';
 import { Product } from '@/types';
 import Link from 'next/link';
+import { useCart } from '@/context/CartContext';
 
 interface ProductGridProps {
   title: string;
@@ -13,26 +14,24 @@ interface ProductGridProps {
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ title, products, showViewAll = true }) => {
-  
+  const { addToCart } = useCart();
+
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
-    e.preventDefault(); // Prevent navigation to product page
-    e.stopPropagation(); // Stop event bubbling
-    console.log('Add to cart:', product.name);
-    // Add your cart logic here (e.g., update context, Redux, or localStorage)
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
   };
 
   const handleQuickView = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('Quick view:', product.name);
-    // Add quick view modal logic here
   };
 
   const handleAddToWishlist = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('Add to wishlist:', product.name);
-    // Add wishlist logic here
   };
 
   return (
@@ -105,13 +104,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products, showViewAll 
 
                     {/* Action Buttons */}
                     <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <button 
+                      <button
                         className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50 mb-2"
                         onClick={(e) => handleAddToWishlist(e, product)}
                       >
                         <Heart size={16} />
                       </button>
-                      <button 
+                      <button
                         className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50"
                         onClick={(e) => handleQuickView(e, product)}
                       >

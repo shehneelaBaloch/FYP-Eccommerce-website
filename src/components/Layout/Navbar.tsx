@@ -6,12 +6,14 @@ import { ShoppingCart, User, Menu, X, Search } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
+import { useSession, signOut } from 'next-auth/react';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { getCartCount } = useCart();
+  const { data: session } = useSession();
 
   const navigationItems = [
     { name: 'Home', href: '/' },
@@ -39,8 +41,8 @@ const Navbar: React.FC = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg' 
+        isScrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-lg'
           : 'bg-white/80 backdrop-blur-sm'
       }`}
     >
@@ -93,16 +95,42 @@ const Navbar: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
-            <Link href="/auth">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="hidden md:flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition-colors"
-              >
-                <User size={18} />
-                <span>Sign In</span>
-              </motion.button>
-            </Link>
+            {session ? (
+              <>
+                {/* Profile Button */}
+                <Link href="/profile">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="hidden md:flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition-colors"
+                  >
+                    <User size={18} />
+                    <span>Profile</span>
+                  </motion.button>
+                </Link>
+
+                {/* Logout Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => signOut()}
+                  className="hidden md:flex items-center space-x-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-300 transition-colors"
+                >
+                  <span>Logout</span>
+                </motion.button>
+              </>
+            ) : (
+              <Link href="/login">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="hidden md:flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition-colors"
+                >
+                  <User size={18} />
+                  <span>Sign In</span>
+                </motion.button>
+              </Link>
+            )}
 
             <Link href="/cart">
               <motion.button
@@ -112,7 +140,7 @@ const Navbar: React.FC = () => {
               >
                 <ShoppingCart size={18} />
                 <span>Cart ({getCartCount()})</span>
-                
+
                 {/* Cart Count Badge */}
                 {getCartCount() > 0 && (
                   <motion.span
@@ -162,7 +190,7 @@ const Navbar: React.FC = () => {
                   </div>
                 </Link>
               ))}
-              
+
               {/* Mobile Search */}
               <div className="px-4 py-3">
                 <div className="flex items-center space-x-2 bg-gray-100 rounded-full px-4 py-2">
@@ -177,12 +205,31 @@ const Navbar: React.FC = () => {
 
               {/* Mobile Auth Buttons */}
               <div className="px-4 py-3 space-y-2">
-                <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                  <button className="w-full bg-purple-600 text-white py-3 rounded-full font-semibold hover:bg-purple-700 transition-colors">
-                    Sign In
-                  </button>
-                </Link>
-                
+                {session ? (
+                  <>
+                    <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                      <button className="w-full bg-purple-600 text-white py-3 rounded-full font-semibold hover:bg-purple-700 transition-colors">
+                        Profile
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        signOut();
+                      }}
+                      className="w-full border border-gray-400 text-gray-700 py-3 rounded-full font-semibold hover:bg-gray-50 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <button className="w-full bg-purple-600 text-white py-3 rounded-full font-semibold hover:bg-purple-700 transition-colors">
+                      Sign In
+                    </button>
+                  </Link>
+                )}
+
                 {/* Mobile Cart Button */}
                 <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)}>
                   <button className="w-full border border-purple-600 text-purple-600 py-3 rounded-full font-semibold hover:bg-purple-50 transition-colors flex items-center justify-center gap-2">
