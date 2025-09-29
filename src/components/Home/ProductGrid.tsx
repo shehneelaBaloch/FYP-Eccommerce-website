@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ShoppingCart, Heart, Eye, ArrowRight } from 'lucide-react';
-import { Product } from '@/types';
-import Link from 'next/link';
-import { useCart } from '@/context/CartContext';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { ShoppingCart, Zap, X } from "lucide-react";
+import Link from "next/link";
+import { Product } from "@/types";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface ProductGridProps {
   title: string;
@@ -13,166 +14,132 @@ interface ProductGridProps {
   showViewAll?: boolean;
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({ title, products, showViewAll = true }) => {
-  const { addToCart } = useCart();
+export default function ProductGrid({
+  title,
+  products,
+  showViewAll = true,
+}: ProductGridProps) {
+  const { data: session } = useSession();
+  const router = useRouter();
 
-  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product);
-  };
+  // ✅ Toast state
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  const handleQuickView = (e: React.MouseEvent, product: Product) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Quick view:', product.name);
-  };
+  // ✅ Add to Cart function
+  const addToCart = async (productId: string, quantity = 1) => {
+    if (!session) {
+      router.push("/login");
+      return;
+    }
 
-  const handleAddToWishlist = (e: React.MouseEvent, product: Product) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Add to wishlist:', product.name);
+    const userId = session.user?.id;
+    if (!userId) {
+      setToast({ message: "❌ User ID missing!", type: "error" });
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/cart/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, productId, quantity }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setToast({ message: "✅ Added to cart!", type: "success" });
+      } else {
+        setToast({ message: "❌ Failed: " + (data.error || "Unknown error"), type: "error" });
+      }
+
+      // auto close toast after 3s
+      setTimeout(() => setToast(null), 3000);
+    } catch (err) {
+      setToast({ message: "❌ Add to cart failed!", type: "error" });
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   return (
-    <section className="py-16">
+    <section className="py-16 bg-gradient-to-b from-gray-50 to-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-12">
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-              {title}
-            </h2>
-            <p className="text-lg text-gray-600">
-              Discover our curated collection of amazing products
-            </p>
-          </div>
-
+          <h2 className="text-4xl font-bold text-gray-900">{title}</h2>
           {showViewAll && (
-            <Link href="/products">
-              <motion.button
-                whileHover={{ x: 5 }}
-                className="text-purple-600 hover:text-purple-700 font-semibold flex items-center gap-2"
-              >
-                View All
-                <ArrowRight size={16} />
-              </motion.button>
+            <Link href="/products" className="text-purple-600 font-semibold">
+              View All →
             </Link>
           )}
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((product, index) => (
-            <motion.div
-              key={product.id || product.slug || index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
-            >
-              <div className="relative">
-                {/* Product Image with Link */}
-                <Link href={`/products/${product.slug}`} className="block">
-                  <div className="relative h-48 bg-gray-100">
-                    <div className="w-full h-full flex items-center justify-center">
-                      {product.imageUrl ? (
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="object-contain h-full"
-                        />
-                      ) : (
-                        <span className="text-gray-400">Product Image</span>
-                      )}
-                    </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {products.map((product, index) => {
+            const productId = (product as any)._id || (product as any).id;
+            const slug =
+              typeof product.slug === "string"
+                ? product.slug
+                : typeof product.slug === "object" && product.slug?.current
+                ? product.slug.current
+                : null;
 
-                    {/* Badges */}
-                    <div className="absolute top-3 left-3">
-                      {product.discount && (
-                        <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
-                          -{product.discount}%
-                        </span>
-                      )}
-                      {product.isNew && (
-                        <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold ml-2">
-                          New
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <button
-                        className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50 mb-2"
-                        onClick={(e) => handleAddToWishlist(e, product)}
-                      >
-                        <Heart size={16} />
-                      </button>
-                      <button
-                        className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50"
-                        onClick={(e) => handleQuickView(e, product)}
-                      >
-                        <Eye size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </Link>
-
-                {/* Product Info */}
-                <div className="p-4">
-                  <Link href={`/products/${product.slug}`}>
-                    <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
-                      {product.name}
-                    </h3>
-                  </Link>
-
-                  {/* Rating */}
-                  {product.rating !== undefined && (
-                    <div className="flex items-center mb-3">
-                      <div className="flex text-yellow-400">
-                        {'★'.repeat(Math.floor(product.rating))}
-                        {'☆'.repeat(5 - Math.floor(product.rating))}
-                      </div>
-                      <span className="text-sm text-gray-500 ml-2">
-                        ({product.rating})
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Price */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-gray-900">
-                        ${product.price != null ? product.price.toFixed(2) : '0.00'}
-                      </span>
-                      {product.originalPrice != null && (
-                        <span className="text-sm text-gray-500 line-through">
-                          ${product.originalPrice.toFixed(2)}
-                        </span>
-                      )}
-                    </div>
+            return (
+              <motion.div
+                key={productId || index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.6 }}
+                className="group"
+              >
+                <div className="relative overflow-hidden">
+                  <img
+                    src={product.imageUrl || "/placeholder.png"}
+                    alt={product.name}
+                    className="w-full h-72 object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="mt-3">
+                  <h3 className="font-semibold text-lg">{product.name}</h3>
+                  <p className="text-pink-600 font-bold">${product.price}</p>
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={() => addToCart(productId)}
+                      className="flex-1 bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition"
+                    >
+                      <ShoppingCart size={16} className="inline mr-1" /> Add to Cart
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await addToCart(productId);
+                        router.push("/cart");
+                      }}
+                      className="flex-1 bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600 transition"
+                    >
+                      <Zap size={16} className="inline mr-1" /> Buy Now
+                    </button>
                   </div>
                 </div>
-
-                {/* Add to Cart Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={(e) => handleAddToCart(e, product)}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <ShoppingCart size={16} />
-                  Add to Cart
-                </motion.button>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
+
+      {/* ✅ Custom Toast */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg text-white font-medium flex items-center gap-2 ${
+            toast.type === "success" ? "bg-green-500" : "bg-red-500"
+          } animate-fadeIn`}
+        >
+          {toast.message}
+          <button onClick={() => setToast(null)}>
+            <X size={16} className="ml-2 opacity-70 hover:opacity-100" />
+          </button>
+        </div>
+      )}
     </section>
   );
-};
-
-export default ProductGrid;
+}

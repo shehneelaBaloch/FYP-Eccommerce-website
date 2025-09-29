@@ -5,12 +5,15 @@ import { compare } from "bcryptjs";
 import connectDB from "@/lib/dbConnect";
 import User, { IUser } from "@/lib/model/User";
 
+type LeanUser = IUser & { _id: string };
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -24,12 +27,13 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Missing credentials");
         }
 
-        const user = (await User.findOne({ email: credentials.email }).lean()) as (IUser & { _id: any }) | null;
+        const user = (await User.findOne({ email: credentials.email }).lean()) as LeanUser | null;
         if (!user) throw new Error("User not found");
 
-        const isValid = await compare(credentials.password, user.password);
+        const isValid = await compare(credentials.password, user.password || "");
         if (!isValid) throw new Error("Invalid password");
 
+        // ✅ return id so token.sub is set
         return {
           id: String(user._id),
           name: user.name,
@@ -42,9 +46,27 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: "/login" },
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
+
+  // ✅ Add callbacks here
+  callbacks: {
+    async jwt({ token, user }) {
+      // First time login → persist user id into token
+      if (user) {
+        token.id = (user as any).id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token?.id) {
+        session.user.id = token.id as string;
+      } else if (token?.sub) {
+        // fallback to default sub if id missing
+        session.user.id = token.sub;
+      }
+      return session;
+    },
+  },
 };
 
 const handler = NextAuth(authOptions);
-
-// ✅ only export once
 export { handler as GET, handler as POST };

@@ -12,6 +12,7 @@
     "@sanity/image-url": "^1.2.0",
     "@sanity/vision": "^4.8.1",
     "bcryptjs": "^3.0.2",
+    "formik": "^2.4.6",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.544.0",
     "mongoose": "^8.18.1",
@@ -21,7 +22,8 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "sanity": "^4.8.1",
-    "styled-components": "^6.1.19"
+    "styled-components": "^6.1.19",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -34,6 +36,7 @@
     "@types/react-is": "^19.0.0",
     "@types/speakingurl": "^13.0.6",
     "@types/which": "^3.0.4",
+    "@types/yup": "^0.29.14",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

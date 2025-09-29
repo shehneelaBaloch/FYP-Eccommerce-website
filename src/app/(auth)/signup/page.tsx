@@ -1,5 +1,7 @@
-'use client';
+"use client";
 
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
@@ -7,25 +9,11 @@ import { useState } from "react";
 export default function SignupPage() {
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const body = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      password: formData.get("password"),
-    };
-
-    await fetch("/api/auth/register", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-
-    setLoading(false);
-    window.location.href = "/login";
-  };
+  const SignupSchema = Yup.object({
+    name: Yup.string().required("Required"),
+    email: Yup.string().email("Invalid email").required("Required"),
+    password: Yup.string().min(6, "Min 6 chars").required("Required"),
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-pink-50">
@@ -39,38 +27,63 @@ export default function SignupPage() {
           Create Account
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            required
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="you@example.com"
-            required
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="••••••••"
-            required
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
+        <Formik
+          initialValues={{ name: "", email: "", password: "" }}
+          validationSchema={SignupSchema}
+          onSubmit={async (values) => {
+            setLoading(true);
+            await fetch("/api/auth/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(values),
+            });
+            setLoading(false);
+            window.location.href = "/login";
+          }}
+        >
+          {({ isSubmitting }) => (
+            <Form className="space-y-5">
+              <div>
+                <Field
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200"
+                />
+                <ErrorMessage name="name" component="p" className="text-red-500 text-sm" />
+              </div>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold shadow-lg hover:opacity-90 transition"
-          >
-            {loading ? "Creating..." : "Sign Up"}
-          </motion.button>
-        </form>
+              <div>
+                <Field
+                  type="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200"
+                />
+                <ErrorMessage name="email" component="p" className="text-red-500 text-sm" />
+              </div>
+
+              <div>
+                <Field
+                  type="password"
+                  name="password"
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200"
+                />
+                <ErrorMessage name="password" component="p" className="text-red-500 text-sm" />
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                disabled={isSubmitting || loading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold"
+              >
+                {loading ? "Creating..." : "Sign Up"}
+              </motion.button>
+            </Form>
+          )}
+        </Formik>
 
         <p className="text-center text-sm text-gray-600 mt-5">
           Already have an account?{" "}

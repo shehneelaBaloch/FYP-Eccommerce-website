@@ -1,6 +1,5 @@
 'use client'
 
-import { CartProvider } from '@/context/CartContext'
 import Navbar from '@/components/Layout/Navbar'
 import Footer from '@/components/Layout/Footer'
 import './globals.css'
@@ -16,13 +15,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        {/* ✅ Wrap the whole app with SessionProvider + CartProvider */}
+        {/* ✅ Only keep SessionProvider now */}
         <SessionProvider>
-          <CartProvider>
-            {!isStudioRoute && <Navbar />}
-            <main>{children}</main>
-            {!isStudioRoute && <Footer />}
-          </CartProvider>
+          {!isStudioRoute && <Navbar />}
+          <main>{children}</main>
+          {!isStudioRoute && <Footer />}
         </SessionProvider>
       </body>
     </html>

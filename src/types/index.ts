@@ -1,5 +1,6 @@
 export interface Product {
-  id: string; // comes from Sanity's _id
+   _id: string;
+    id: string;  
   name: string;
   price: number;
   originalPrice?: number;
@@ -11,7 +12,8 @@ export interface Product {
   isNew?: boolean;
   isTrending?: boolean;
 
-    slug?: string;
+
+    slug?: string | { current: string };
 }
 
 export interface Category {

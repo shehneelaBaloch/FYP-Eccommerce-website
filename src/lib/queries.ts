@@ -10,12 +10,13 @@ export const productsQuery = `*[_type == "product"]{
   discount,
   isNew,
   isTrending,
-"slug": slug.current,   
+  isFlashSale,
+  salesCount,
   category->{
     _id,
     name,
     "imageUrl": image.asset->url,
-    slug
+    "slugs": slugs[].current   // ✅ multiple slugs support
   }
 }`;
 
@@ -25,28 +26,31 @@ export const categoriesQuery = `*[_type == "category"]{
   name,
   "imageUrl": image.asset->url,
   productCount,
-  slug
+  "slugs": slugs[].current    // ✅ flatten array of slugs
 }`;
 
-// 🔎 Fetch products by category slug
-export const productsByCategoryQuery = `*[_type == "product" && category->slug.current == $slug] {
+// 🔎 Fetch products by category slug (match ANY slug inside array)
+export const productsByCategoryQuery = `*[_type == "product" && $slug in category->slugs[].current] {
   _id,
   name,
   price,
   originalPrice,
   description,
-  "imageUrl": images[0].asset->url,
+  "imageUrl": image.asset->url,
   "slug": slug.current,
   rating,
   discount,
   isNew,
   isTrending,
+  isFlashSale,
+  salesCount,
   category->{
     _id,
     name,
-    "slug": slug.current
+    "slugs": slugs[].current
   }
 }`;
+
 // 🔎 Fetch a single product detail by slug
 export const productDetailQuery = `*[_type == "product" && slug.current == $slug][0]{
   _id,
@@ -59,11 +63,54 @@ export const productDetailQuery = `*[_type == "product" && slug.current == $slug
   discount,
   isNew,
   isTrending,
-  slug,
+  isFlashSale,
+  salesCount,
   category->{
     _id,
     name,
-    slug
+    "slugs": slugs[].current
+  }
+}`;
+
+// 🔎 Fetch only flash sale products
+export const flashSaleQuery = `*[_type == "product" && isFlashSale == true]{
+  _id,
+  name,
+  price,
+  originalPrice,
+  "imageUrl": image.asset->url,
+  description,
+  rating,
+  discount,
+  isNew,
+  isTrending,
+  isFlashSale,
+  salesCount,
+  category->{
+    _id,
+    name,
+    "slugs": slugs[].current
+  }
+}`;
+
+// 🔎 Fetch only best sellers (by salesCount)
+export const bestSellersQuery = `*[_type == "product"] | order(salesCount desc)[0...8]{
+  _id,
+  name,
+  price,
+  originalPrice,
+  "imageUrl": image.asset->url,
+  description,
+  rating,
+  discount,
+  isNew,
+  isTrending,
+  isFlashSale,
+  salesCount,
+  category->{
+    _id,
+    name,
+    "slugs": slugs[].current
   }
 }`;
 
@@ -79,11 +126,12 @@ export const trendingProductsQuery = `*[_type == "product" && isTrending == true
   discount,
   isNew,
   isTrending,
-  slug,
+  isFlashSale,
+  salesCount,
   category->{
     _id,
     name,
-    slug
+    "slugs": slugs[].current
   }
 }`;
 
@@ -99,10 +147,11 @@ export const newArrivalsQuery = `*[_type == "product" && isNew == true]{
   discount,
   isNew,
   isTrending,
-  slug,
+  isFlashSale,
+  salesCount,
   category->{
     _id,
     name,
-    slug
+    "slugs": slugs[].current
   }
 }`;

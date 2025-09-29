@@ -1,29 +1,19 @@
-'use client';
+"use client";
 
 import { signIn } from "next-auth/react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import { motion } from "framer-motion";
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email");
-    const password = formData.get("password");
-
-    await signIn("credentials", {
-      email,
-      password,
-      callbackUrl: "/", // redirect after login
-    });
-
-    setLoading(false);
-  };
+  const LoginSchema = Yup.object({
+    email: Yup.string().email("Invalid email").required("Required"),
+    password: Yup.string().min(6, "Min 6 chars").required("Required"),
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-purple-50">
@@ -37,42 +27,58 @@ export default function LoginPage() {
           Welcome Back
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-600">Email</label>
-            <input
-              type="email"
-              name="email"
-              required
-              className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-            />
-          </div>
+        <Formik
+          initialValues={{ email: "", password: "" }}
+          validationSchema={LoginSchema}
+          onSubmit={async (values) => {
+            setLoading(true);
+            await signIn("credentials", {
+              email: values.email,
+              password: values.password,
+              callbackUrl: "/",
+            });
+            setLoading(false);
+          }}
+        >
+          {({ isSubmitting }) => (
+            <Form className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Email</label>
+                <Field
+                  type="email"
+                  name="email"
+                  className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500"
+                />
+                <ErrorMessage name="email" component="p" className="text-red-500 text-sm" />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-600">Password</label>
-            <input
-              type="password"
-              name="password"
-              required
-              className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Password</label>
+                <Field
+                  type="password"
+                  name="password"
+                  className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500"
+                />
+                <ErrorMessage name="password" component="p" className="text-red-500 text-sm" />
+              </div>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </motion.button>
-        </form>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                disabled={isSubmitting || loading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold shadow-lg"
+              >
+                {loading ? "Signing in..." : "Sign In"}
+              </motion.button>
+            </Form>
+          )}
+        </Formik>
 
         {/* Google login button */}
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => signIn("google", { callbackUrl: "/" })}
-          className="mt-4 w-full py-3 rounded-xl border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-100 transition"
+          className="mt-4 w-full py-3 rounded-xl border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-100"
         >
           <img src="/google.svg" alt="Google" className="w-5 h-5" />
           Continue with Google

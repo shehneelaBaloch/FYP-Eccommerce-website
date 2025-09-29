@@ -14,13 +14,7 @@ export default defineType({
     }),
 
     // Slug
-    defineField({
-      name: 'slug',
-      title: 'Slug',
-      type: 'slug',
-      options: { source: 'name', maxLength: 96 },
-      validation: (Rule) => Rule.required(),
-    }),
+ 
 
     // Price
     defineField({
@@ -60,7 +54,7 @@ export default defineType({
       initialValue: false,
     }),
 
-    // ✅ Trending Product flag
+    // Trending flag
     defineField({
       name: 'isTrending',
       title: 'Trending Product',
@@ -68,7 +62,23 @@ export default defineType({
       initialValue: false,
     }),
 
-    // Category reference (connects to category schema)
+    // ✅ Flash Sale flag
+    defineField({
+      name: 'isFlashSale',
+      title: 'Flash Sale',
+      type: 'boolean',
+      initialValue: false,
+    }),
+
+    // ✅ Sales Count (Best Sellers)
+    defineField({
+      name: 'salesCount',
+      title: 'Sales Count',
+      type: 'number',
+      initialValue: 0,
+    }),
+
+    // Category reference
     defineField({
       name: 'category',
       title: 'Category',

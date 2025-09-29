@@ -21,7 +21,7 @@ const TrendingProducts: React.FC<TrendingProductsProps> = ({ products }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => (
             <div
-              key={product.id}
+              key={product.id} // ✅ safe because we normalized _id → id
               className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
             >
               {/* Product Image */}
@@ -33,13 +33,15 @@ const TrendingProducts: React.FC<TrendingProductsProps> = ({ products }) => {
                     className="object-contain h-full w-full"
                   />
                 ) : (
-                  <span className="text-gray-400">Product Image</span>
+                  <span className="text-gray-400">No Image</span>
                 )}
               </div>
 
               {/* Product Info */}
               <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
+                <h3 className="font-semibold text-lg mb-2 truncate">
+                  {product.name}
+                </h3>
 
                 {/* Price */}
                 <p className="text-gray-600 mb-2">
