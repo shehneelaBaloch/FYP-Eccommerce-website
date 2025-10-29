@@ -1,12 +1,20 @@
-import mongoose, { Schema, models } from "mongoose";
+// lib/model/Wishlist.ts
+import mongoose, { Schema, Document, Model, models } from "mongoose";
 
-const WishlistSchema = new Schema(
+export interface IWishlist extends Document {
+  userId: string;
+  productId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const WishlistSchema: Schema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+    userId: { type: String, required: true },
+    productId: { type: String, required: true },
   },
   { timestamps: true }
 );
 
-const Wishlist = models.Wishlist || mongoose.model("Wishlist", WishlistSchema);
+const Wishlist: Model<IWishlist> = models.Wishlist || mongoose.model<IWishlist>("Wishlist", WishlistSchema);
 export default Wishlist;

@@ -1,13 +1,52 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Send } from 'lucide-react';
+import { Mail, Send, Check, X } from 'lucide-react';
 
 const Newsletter: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setMessage({ type: 'error', text: 'Please enter a valid email address' });
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: data.message });
+        setEmail('');
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Subscription failed' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <section className="py-20 relative overflow-hidden">
-      {/* Background elements that match the Hero section */}
+      {/* Background elements */}
       <div className="absolute inset-0">
         <div className="absolute top-10 left-10 w-20 h-20 bg-purple-200/30 rounded-full blur-xl"></div>
         <div className="absolute bottom-10 right-10 w-24 h-24 bg-pink-200/30 rounded-full blur-xl"></div>
@@ -38,7 +77,8 @@ const Newsletter: React.FC = () => {
             Join our newsletter and be the first to know about exclusive offers, new arrivals, and special promotions
           </p>
 
-          <motion.div
+          <motion.form
+            onSubmit={handleSubmit}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -47,18 +87,48 @@ const Newsletter: React.FC = () => {
           >
             <input 
               type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address" 
               className="px-6 py-4 rounded-full text-gray-900 border-2 border-purple-200 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all duration-300 w-full sm:max-w-md placeholder-gray-400"
+              disabled={isLoading}
+              required
             />
             <motion.button
+              type="submit"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl transition-all duration-300 whitespace-nowrap flex items-center gap-2"
+              disabled={isLoading}
+              className="group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl transition-all duration-300 whitespace-nowrap flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>Subscribe</span>
-              <Send className="group-hover:translate-x-1 transition-transform" size={18} />
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span>Subscribe</span>
+                  <Send className="group-hover:translate-x-1 transition-transform" size={18} />
+                </>
+              )}
             </motion.button>
-          </motion.div>
+          </motion.form>
+
+          {/* Message Display */}
+          {message && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`mt-4 flex items-center justify-center gap-2 ${
+                message.type === 'success' ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              {message.type === 'success' ? (
+                <Check size={20} />
+              ) : (
+                <X size={20} />
+              )}
+              <span className="text-sm font-medium">{message.text}</span>
+            </motion.div>
+          )}
 
           <p className="text-sm text-gray-500 mt-6">
             🔒 We respect your privacy and never share your data
