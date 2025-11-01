@@ -160,7 +160,7 @@ export default function WishlistPage() {
 
   // ✅ Main Wishlist Page
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-6 lg:px-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-6 lg:px-12 mt-12">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 mb-10 flex items-center gap-3">
           <Heart size={30} className="text-pink-600" /> 
