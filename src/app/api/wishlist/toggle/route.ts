@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/dbConnect";
 import Wishlist, { IWishlist } from "@/lib/model/Wishlist";
 
+export const dynamic = "force-dynamic";
+
 interface RequestBody {
   userId: string;
   productId: string;

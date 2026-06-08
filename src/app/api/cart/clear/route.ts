@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/dbConnect";
 import Cart from "@/lib/model/Cart";
 
+export const dynamic = "force-dynamic";
+
 export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");

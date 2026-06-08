@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import connectDB from "@/lib/dbConnect";
+
+export const dynamic = "force-dynamic";
 import Profile from "@/lib/model/Profile";
 
 export async function GET(req: NextRequest) {

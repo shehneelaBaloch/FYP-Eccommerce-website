@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/dbConnect";
 import Order from "@/lib/model/Order"; // ✅ corrected folder name if it’s models not model
-
+export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     // 🔹 Parse JSON body

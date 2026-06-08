@@ -3,6 +3,8 @@ import dbConnect from "@/lib/dbConnect";
 import ProductVector from "@/lib/model/ProductVector";
 import { getTextEmbedding, cosineSimilarity } from "@/lib/embedding";
 
+export const dynamic = "force-dynamic";
+
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {

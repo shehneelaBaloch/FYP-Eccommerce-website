@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/dbConnect";
 import Cart from "@/lib/model/Cart";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
     const { userId, productId, quantity = 1 } = await req.json();

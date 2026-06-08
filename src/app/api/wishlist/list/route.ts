@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/dbConnect";
 import Wishlist from "@/lib/model/Wishlist";
 import { client } from "@/lib/sanity";
+
+export const dynamic = "force-dynamic";
 import { groq } from "next-sanity";
 
 interface WishlistItem {

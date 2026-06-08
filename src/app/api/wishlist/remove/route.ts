@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/dbConnect";
 import Wishlist, { IWishlist } from "@/lib/model/Wishlist";
 
+export const dynamic = "force-dynamic";
+
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

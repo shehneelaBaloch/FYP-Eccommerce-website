@@ -4,6 +4,8 @@ import Cart from "@/lib/model/Cart";
 import { client } from "@/lib/sanity";
 import { groq } from "next-sanity";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

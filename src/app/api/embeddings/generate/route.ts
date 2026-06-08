@@ -3,6 +3,8 @@ import { client } from "@/lib/sanity";
 import { productsQuery } from "@/lib/queries";
 
 import dbConnect from "@/lib/dbConnect";
+
+export const dynamic = "force-dynamic";
 import ProductVector from "@/lib/model/ProductVector";
 import { getTextEmbedding } from "@/lib/embedding";
 
