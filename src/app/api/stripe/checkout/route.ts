@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+import { getStripeClient } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-09-30.clover",
-});
-
 export async function POST(req: Request) {
   try {
+    const stripe = getStripeClient();
     const { items, email } = await req.json();
 
     if (!items || items.length === 0) {
