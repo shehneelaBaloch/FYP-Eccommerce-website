@@ -48,7 +48,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 
   // ✅ Add callbacks here
-  callbacks: {
+  callbacks: {                  
     async jwt({ token, user }) {
       // First time login → persist user id into token
       if (user) {
@@ -60,7 +60,7 @@ export const authOptions: NextAuthOptions = {
       if (token?.id) {
         session.user.id = token.id as string;
       } else if (token?.sub) {
-        // fallback to default sub if id missing
+       
         session.user.id = token.sub;
       }
       return session;
